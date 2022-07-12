@@ -25,8 +25,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.background.workers.BlurWorker
+import com.example.background.workers.CleanUpWorker
+import com.example.background.workers.SaveImageToFileWorker
 
 
 class BlurViewModel(application: Application) : ViewModel() {
@@ -44,10 +47,21 @@ class BlurViewModel(application: Application) : ViewModel() {
      * @param blurLevel The amount to blur the image
      */
     internal fun applyBlur(blurLevel: Int) {
-        val blurRequest =
-            OneTimeWorkRequest.Builder(BlurWorker::class.java).setInputData(createInputDataURI())
-                .build()
-        workManager.enqueue(blurRequest)
+        /* Add WorkRequest to CleanUp temporary files from the file system. */
+        var continuation = workManager.beginWith(OneTimeWorkRequest.from(CleanUpWorker::class.java))
+        for (i in 0 until blurLevel) {
+            /* Add WorkRequest to blur an image. */
+            val blurBuilder = OneTimeWorkRequestBuilder<BlurWorker>()
+            if (i == 0) {
+                blurBuilder.setInputData(createInputDataURI())
+            }
+            continuation = continuation.then(blurBuilder.build())
+        }
+        /* Add WorkRequest to save the image to the file system. */
+        val save = OneTimeWorkRequestBuilder<SaveImageToFileWorker>()
+        continuation = continuation.then(save.build())
+        /* Actually start the work. */
+        continuation.enqueue()
     }
 
     private fun uriOrNull(uriString: String?): Uri? {
