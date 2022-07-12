@@ -33,13 +33,13 @@ class BlurActivity : AppCompatActivity() {
             application
         )
     }
+
     private lateinit var binding: ActivityBlurBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBlurBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         binding.goButton.setOnClickListener { viewModel.applyBlur(blurLevel) }
     }
 

@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.example.background.KEY_IMAGE_URI
 import com.example.background.TAG
 
 class BlurWorker(context: Context, param: WorkerParameters) : Worker(context, param) {
@@ -42,6 +43,5 @@ class BlurWorker(context: Context, param: WorkerParameters) : Worker(context, pa
 
     companion object {
         const val KEY_BLUR_VALUE: String = "blur value"
-        const val KEY_IMAGE_URI: String = "image uri"
     }
 }
