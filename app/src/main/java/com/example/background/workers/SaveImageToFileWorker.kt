@@ -1,5 +1,6 @@
 package com.example.background.workers
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -24,14 +25,14 @@ class SaveImageToFileWorker(context: Context, params: WorkerParameters) : Worker
             val resourceUri = inputData.getString(KEY_IMAGE_URI)
             val bitmap =
                 BitmapFactory.decodeStream(resolver.openInputStream(Uri.parse(resourceUri)))
-            val imageUrl = MediaStore.Images.Media.insertImage(
-                resolver,
-                bitmap,
-                title,
-                dateFormatter.format(Date())
+            val imageUri = resolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, title)
+                }
             )
-            return if (imageUrl != null) {
-                val output = workDataOf(KEY_IMAGE_URI to imageUrl)
+            return if (imageUri != null) {
+                val output = workDataOf(KEY_IMAGE_URI to imageUri)
                 Result.success(output)
             } else {
                 Log.e(TAG, "Writing to Media Store Failed")

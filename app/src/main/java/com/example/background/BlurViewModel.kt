@@ -21,12 +21,10 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.BlurMaskFilter
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import com.example.background.workers.BlurWorker
 import com.example.background.workers.CleanUpWorker
 import com.example.background.workers.SaveImageToFileWorker
@@ -36,10 +34,12 @@ class BlurViewModel(application: Application) : ViewModel() {
 
     internal var imageUri: Uri? = null
     internal var outputUri: Uri? = null
+    internal val outputWorkInformation: LiveData<List<WorkInfo>>
     private val workManager = WorkManager.getInstance(application)
 
     init {
         imageUri = getImageUri(application.applicationContext)
+        outputWorkInformation = workManager.getWorkInfosByTagLiveData(TAG_OUTPUT)
     }
 
     /**
@@ -48,7 +48,11 @@ class BlurViewModel(application: Application) : ViewModel() {
      */
     internal fun applyBlur(blurLevel: Int) {
         /* Add WorkRequest to CleanUp temporary files from the file system. */
-        var continuation = workManager.beginWith(OneTimeWorkRequest.from(CleanUpWorker::class.java))
+        var continuation = workManager.beginUniqueWork(
+            IMAGE_MANIPULATION_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequest.from(CleanUpWorker::class.java)
+        )
         for (i in 0 until blurLevel) {
             /* Add WorkRequest to blur an image. */
             val blurBuilder = OneTimeWorkRequestBuilder<BlurWorker>()
@@ -58,8 +62,8 @@ class BlurViewModel(application: Application) : ViewModel() {
             continuation = continuation.then(blurBuilder.build())
         }
         /* Add WorkRequest to save the image to the file system. */
-        val save = OneTimeWorkRequestBuilder<SaveImageToFileWorker>()
-        continuation = continuation.then(save.build())
+        val save = OneTimeWorkRequestBuilder<SaveImageToFileWorker>().addTag(TAG_OUTPUT).build()
+        continuation = continuation.then(save)
         /* Actually start the work. */
         continuation.enqueue()
     }
@@ -95,6 +99,10 @@ class BlurViewModel(application: Application) : ViewModel() {
 
     internal fun setOutputUri(outputImageUri: String?) {
         outputUri = uriOrNull(outputImageUri)
+    }
+
+    internal fun cancelWork() {
+        workManager.cancelUniqueWork(IMAGE_MANIPULATION_WORK_NAME)
     }
 
     class BlurViewModelFactory(private val application: Application) : ViewModelProvider.Factory {

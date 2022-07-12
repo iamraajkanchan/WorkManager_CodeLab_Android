@@ -16,14 +16,18 @@
 
 package com.example.background
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.work.WorkInfo
 import com.example.background.databinding.ActivityBlurBinding
 
 /**
  * CodeLab Source : https://codelabs.developers.google.com/codelabs/android-workmanager
+ * Advanced CodeLab Source : https://developer.android.com/codelabs/android-adv-workmanager?index=..%2F..index#0
  * */
 
 class BlurActivity : AppCompatActivity() {
@@ -41,6 +45,46 @@ class BlurActivity : AppCompatActivity() {
         binding = ActivityBlurBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.goButton.setOnClickListener { viewModel.applyBlur(blurLevel) }
+        /* Observer work status */
+        viewModel.outputWorkInformation.observe(this, workInformationObserver())
+        binding.seeFileButton.setOnClickListener {
+            viewModel.outputUri?.let { currentUri ->
+                val actionView = Intent(Intent.ACTION_VIEW, currentUri).apply {
+                    addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                actionView.resolveActivity(packageManager)?.run {
+                    startActivity(actionView)
+                }
+            }
+        }
+        binding.cancelButton.setOnClickListener {
+            viewModel.cancelWork()
+        }
+    }
+
+    /**
+     * Define the observer function.
+     * @return Observer<List<WorkInfo>>
+     * */
+    private fun workInformationObserver(): Observer<List<WorkInfo>> {
+        return Observer {
+            if (it.isNullOrEmpty()) {
+                return@Observer
+            }
+            val workInfo = it[0]
+            if (workInfo.state.isFinished) {
+                showWorkFinished()
+                val outputImageUri = workInfo.outputData.getString(KEY_IMAGE_URI)
+                /* If there is an output file show "See File" Button */
+                if (!outputImageUri.isNullOrEmpty()) {
+                    viewModel.setOutputUri(outputImageUri)
+                    binding.seeFileButton.visibility = View.VISIBLE
+                }
+            } else {
+                showWorkInProgress()
+            }
+        }
     }
 
     /**
