@@ -56,12 +56,9 @@ class BlurActivity : AppCompatActivity() {
             ) {
                 viewModel.applyBlur(blurLevel)
             } else {
-                ActivityCompat.requestPermissions(
+                ActivityCompat.shouldShowRequestPermissionRationale(
                     this,
-                    arrayOf(
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ),
-                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
                 )
             }
         }
@@ -80,12 +77,9 @@ class BlurActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                ActivityCompat.requestPermissions(
+                ActivityCompat.shouldShowRequestPermissionRationale(
                     this,
-                    arrayOf(
-                        android.Manifest.permission.READ_EXTERNAL_STORAGE
-                    ),
-                    REQUEST_CODE_READ_EXTERNAL_STORAGE
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
                 )
             }
 
