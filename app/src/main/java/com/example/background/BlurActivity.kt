@@ -16,10 +16,12 @@
 
 package com.example.background
 
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -56,10 +58,23 @@ class BlurActivity : AppCompatActivity() {
             ) {
                 viewModel.applyBlur(blurLevel)
             } else {
-                ActivityCompat.shouldShowRequestPermissionRationale(
-                    this,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
+                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                        this,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                ) {
+                    Toast.makeText(
+                        this,
+                        "Need to access external storage to store the blurred image.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+                    )
+                }
             }
         }
         /* Observer work status */
@@ -77,10 +92,23 @@ class BlurActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                ActivityCompat.shouldShowRequestPermissionRationale(
-                    this,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE
-                )
+                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                        this,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE
+                    )
+                ) {
+                    Toast.makeText(
+                        this,
+                        "Need to access external storage to read the blurred image.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                        REQUEST_CODE_READ_EXTERNAL_STORAGE
+                    )
+                }
             }
 
         }
