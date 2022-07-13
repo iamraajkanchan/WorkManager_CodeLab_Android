@@ -17,10 +17,14 @@
 package com.example.background
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.PackageManagerCompat
 import androidx.lifecycle.Observer
 import androidx.work.WorkInfo
 import com.example.background.databinding.ActivityBlurBinding
@@ -44,19 +48,47 @@ class BlurActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityBlurBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.goButton.setOnClickListener { viewModel.applyBlur(blurLevel) }
+        binding.goButton.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                viewModel.applyBlur(blurLevel)
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ),
+                    REQUEST_CODE_WRITE_EXTERNAL_STORAGE
+                )
+            }
+        }
         /* Observer work status */
         viewModel.outputWorkInformation.observe(this, workInformationObserver())
         binding.seeFileButton.setOnClickListener {
-            viewModel.outputUri?.let { currentUri ->
-                val actionView = Intent(Intent.ACTION_VIEW, currentUri).apply {
-                    addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                viewModel.outputUri?.let { currentUri ->
+                    val actionView = Intent(Intent.ACTION_VIEW, currentUri)
+                    actionView.resolveActivity(packageManager)?.run {
+                        startActivity(actionView)
+                    }
                 }
-                actionView.resolveActivity(packageManager)?.run {
-                    startActivity(actionView)
-                }
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE
+                    ),
+                    REQUEST_CODE_READ_EXTERNAL_STORAGE
+                )
             }
+
         }
         binding.cancelButton.setOnClickListener {
             viewModel.cancelWork()
@@ -83,6 +115,25 @@ class BlurActivity : AppCompatActivity() {
                 }
             } else {
                 showWorkInProgress()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_CODE_WRITE_EXTERNAL_STORAGE -> viewModel.applyBlur(blurLevel)
+            REQUEST_CODE_READ_EXTERNAL_STORAGE -> {
+                viewModel.outputUri?.let { currentUri ->
+                    val actionView = Intent(Intent.ACTION_VIEW, currentUri)
+                    actionView.resolveActivity(packageManager)?.run {
+                        startActivity(actionView)
+                    }
+                }
             }
         }
     }

@@ -25,11 +25,10 @@ class SaveImageToFileWorker(context: Context, params: WorkerParameters) : Worker
             val resourceUri = inputData.getString(KEY_IMAGE_URI)
             val bitmap =
                 BitmapFactory.decodeStream(resolver.openInputStream(Uri.parse(resourceUri)))
-            val imageUri = resolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                ContentValues().apply {
-                    put(MediaStore.Images.Media.DISPLAY_NAME, title)
-                }
+            val imageUri = MediaStore.Images.Media.insertImage(
+                resolver, bitmap, title, dateFormatter.format(
+                    Date()
+                )
             )
             return if (imageUri != null) {
                 val output = workDataOf(KEY_IMAGE_URI to imageUri)

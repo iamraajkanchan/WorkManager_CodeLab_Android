@@ -39,3 +39,7 @@ const val TAG_OUTPUT = "OUTPUT"
 const val TAG = "WorkManager_Android"
 
 const val DELAY_TIME_MILLIS: Long = 3000
+
+// Request Code
+const val REQUEST_CODE_WRITE_EXTERNAL_STORAGE = 100
+const val REQUEST_CODE_READ_EXTERNAL_STORAGE = 101
