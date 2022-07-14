@@ -76,16 +76,18 @@ class BlurViewModel(application: Application) : ViewModel() {
         }
     }
 
+    /**
+     * getImageUri method returns the Uri of the image
+     * @param context
+     * */
     private fun getImageUri(context: Context): Uri {
         val resources = context.resources
-
         val imageUri = Uri.Builder()
             .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
             .authority(resources.getResourcePackageName(R.drawable.android_cupcake))
             .appendPath(resources.getResourceTypeName(R.drawable.android_cupcake))
             .appendPath(resources.getResourceEntryName(R.drawable.android_cupcake))
             .build()
-
         return imageUri
     }
 
