@@ -29,10 +29,9 @@ import com.example.background.workers.BlurWorker
 import com.example.background.workers.CleanUpWorker
 import com.example.background.workers.SaveImageToFileWorker
 
-
 class BlurViewModel(application: Application) : ViewModel() {
 
-    internal var imageUri: Uri? = null
+    private var imageUri: Uri? = null
     internal var outputUri: Uri? = null
     internal val outputWorkInformation: LiveData<List<WorkInfo>>
     private val workManager = WorkManager.getInstance(application)
