@@ -16,7 +16,6 @@
 
 package com.example.background
 
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -26,10 +25,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.PackageManagerCompat
 import androidx.lifecycle.Observer
 import androidx.work.WorkInfo
 import com.example.background.databinding.ActivityBlurBinding
+import com.example.background.periodic.MainPeriodicActivity
 
 /**
  * CodeLab Source : https://codelabs.developers.google.com/codelabs/android-workmanager
@@ -112,6 +111,11 @@ class BlurActivity : AppCompatActivity() {
         }
         binding.cancelButton.setOnClickListener {
             viewModel.cancelWork()
+        }
+        binding.btnPeriodicRequest.setOnClickListener {
+            Intent(this@BlurActivity, MainPeriodicActivity::class.java).apply {
+                startActivity(this)
+            }
         }
     }
 
