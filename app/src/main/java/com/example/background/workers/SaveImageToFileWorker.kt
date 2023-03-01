@@ -1,6 +1,5 @@
 package com.example.background.workers
 
-import android.content.ContentValues
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
